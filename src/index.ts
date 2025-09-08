@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import 'dotenv/config';
 import mysql from 'mysql2/promise';
 console.log(process.env.DBUSER);
 
@@ -58,6 +58,44 @@ CREATE TABLE produtos (
 );
 Faz pelo menos 3 inserções nessa tabela
 */ 
+app.get('/', async (req: Request, res: Response) => {
+    if (!process.env.DBUSER) {//! significa que é a negação da variável
+        res.status(500).send("Variável de ambiente DBUSER não está definida")
+        return;
+    }
+    if (process.env.DBPASSWORD==undefined) {
+        res.status(500).send("Variável de ambiente DBPASSWORD não está definida")
+        return;
+    }
+    if (!process.env.DBHOST) {
+        res.status(500).send("Variável de ambiente DBHOST não está definida")
+        return;
+    }
+    if (!process.env.DBNAME) {
+        res.status(500).send("Variável de ambiente DBNAME não está definida")
+        return;
+    }
+    if (!process.env.DBPORT) {
+        res.status(500).send("Variável de ambiente DBPORT não está definida")
+        return;
+    }
+});
+app.get('/produtos', async (req: Request, res: Response) => {
+    try{
+       const connection = await mysql.createConnection({
+        host: process.env.DBHOST as string,
+        user: process.env.DBUSER as string,
+        password: process.env.DBPASSWORD as string,
+        database: process.env.DBNAME as string,
+        port: Number(process.env.DBPORT),
+     });
+       const [rows] = await connection.query('SELECT * FROM produtos');
+        res.send(rows);
+    }
+     catch(error){
+        console.log("Erro ao conectar ao banco de dados: " + error);
+    }
+});
 
 
 
